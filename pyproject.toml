@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "quantummessaging"
+version = "0.1.0"
+description = ""
+authors = ["Adeel Ahmed Qureshi <adeelahmedqureshi02@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pycryptodome = "^3.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

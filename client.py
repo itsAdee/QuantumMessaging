@@ -1,9 +1,8 @@
-from ccakem import *
+from ccakem import kem_keygen1024, kem_decaps1024
 import socket
 from Crypto.Protocol.KDF import HKDF
 from Crypto.Cipher import AES
 from util import decode, encode
-from params import KYBER_SYM_BYTES
 from Crypto.Hash import SHA512
 
 HOST = "localhost"
@@ -16,6 +15,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     root_key = None  # Initialize root_key
 
     while True:
+        print("Public Key:")
+        print(pub)
+        print("Public Key len",len(pub))
+
+        print("Private Key:")
+        print(priv)
+        print("Private Key len",len(priv))
+        
         # Key Generation
         pub_bytes = encode(pub)
         # Send the public key as bytes
@@ -55,10 +62,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.sendall(tag)
         s.sendall(nonce)
 
-       
+        
         if message.decode('utf-8') == 'quit':
             break
-       
+        
         # Generate seed for next iteration (Double Ratchet)
         seed = HKDF(shared_secret, 32, salt=b"DoubleRatchetSeed", hashmod=SHA512)
 

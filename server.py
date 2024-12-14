@@ -1,5 +1,5 @@
 import socket
-from ccakem import *
+from ccakem import kem_keygen1024, kem_encaps1024
 from Crypto.Protocol.KDF import HKDF
 from Crypto.Cipher import AES
 from util import decode, encode
@@ -31,7 +31,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             cipher_bytes = encode(cipher)
             shared_secret = encode(shared_secret)
             conn.sendall(cipher_bytes)
-           
+            
             # Update root_key using the Double Ratchet Algorithm
             if root_key is None:
                 root_key = shared_secret
