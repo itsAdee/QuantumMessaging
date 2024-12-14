@@ -21,7 +21,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         print("Private Key:")
         print(priv)
-        print("Private Key len",len(priv))
+        print("Private Key len",len(priv))
         
         # Key Generation
         pub_bytes = encode(pub)
