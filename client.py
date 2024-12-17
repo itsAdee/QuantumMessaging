@@ -4,9 +4,55 @@ from Crypto.Protocol.KDF import HKDF
 from Crypto.Cipher import AES
 from util import decode, encode
 from Crypto.Hash import SHA512
+import threading
 
 HOST = "localhost"
 PORT = 65432
+
+def handle_receive(s, aes_key):
+    while True:
+        try:
+            # Receive encrypted message, tag, and nonce from the server
+            ciphertext = s.recv(8096)
+            if not ciphertext:
+                break
+            tag = s.recv(16)
+            nonce = s.recv(16)
+
+            # Decrypt and verify the message
+            cipher = AES.new(aes_key, AES.MODE_EAX, nonce=nonce)
+            plaintext = cipher.decrypt(ciphertext)
+
+            try:
+                cipher.verify(tag)
+                plaintext = plaintext.decode('utf-8')
+                if plaintext == 'quit':
+                    break
+                print("Server:", plaintext)
+            except ValueError:
+                print("Key incorrect or message corrupted")
+        except:
+            break
+
+def handle_send(s, aes_key):
+    while True:
+        try:
+            # Get user input for the message
+            message = input("Enter message: ").encode("utf-8")
+
+            # Encrypt the message and obtain the nonce and tag
+            cipher = AES.new(aes_key, AES.MODE_EAX)
+            ciphertext, tag = cipher.encrypt_and_digest(message)
+
+            # Send the encrypted message, nonce, and tag to the server
+            s.sendall(ciphertext)
+            s.sendall(tag)
+            s.sendall(cipher.nonce)
+
+            if message.decode('utf-8') == 'quit':
+                break
+        except:
+            break
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
@@ -14,60 +60,34 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     priv, pub = kem_keygen1024()
     root_key = None  # Initialize root_key
 
-    while True:
-        print("Public Key:")
-        print(pub)
-        print("Public Key len",len(pub))
+    # Key Generation
+    pub_bytes = encode(pub)
+    # Send the public key as bytes
+    s.sendall(pub_bytes)
 
-        print("Private Key:")
-        print(priv)
-        print("Private Key len",len(priv))
-        
-        # Key Generation
-        pub_bytes = encode(pub)
-        # Send the public key as bytes
-        s.sendall(pub_bytes)
+    # Receive the encapsulated key from the server
+    cipher = s.recv(8096)
+    cipher = decode(cipher)
 
-        # Receive the encapsulated key from the server
-        cipher = s.recv(8096)
-        cipher = decode(cipher)
+    # Decapsulate the key
+    shared_secret = kem_decaps1024(priv, cipher)
+    shared_secret = encode(shared_secret)
 
-        # Decapsulate the key
-        shared_secret = kem_decaps1024(priv, cipher)
-        shared_secret = encode(shared_secret)
+    if root_key is None:
+        # If it's the first iteration, set the root_key
+        root_key = shared_secret
+    else:
+        # Update root_key using the Double Ratchet Algorithm
+        root_key = HKDF(root_key, 32, salt=shared_secret, hashmod=SHA512)
 
-        if root_key is None:
-            # If it's the first iteration, set the root_key
-            root_key = shared_secret
-        else:
-            # Update root_key using the Double Ratchet Algorithm
-            root_key = HKDF(root_key, 32, salt=shared_secret, hashmod=SHA512)
+    # Derive AES key from root_key
+    salt = s.recv(16)
+    aes_key = HKDF(root_key, 16, salt=salt, hashmod=SHA512)
 
-        # Derive AES key from root_key
-        salt = s.recv(16)
-        aes_key = HKDF(root_key, 16, salt=salt, hashmod=SHA512)
-
-        cipher = AES.new(aes_key, AES.MODE_EAX)
-
-        # Encrypt the message and obtain the nonce and tag
-        nonce = cipher.nonce
-        # Get user input for the message
-        message = input("Enter message: ")
-        message = message.encode("utf-8")
-
-        ciphertext, tag = cipher.encrypt_and_digest(message)
-
-        # Send the encrypted message, nonce, and tag to the server
-        s.sendall(ciphertext)
-        s.sendall(tag)
-        s.sendall(nonce)
-
-        
-        if message.decode('utf-8') == 'quit':
-            break
-        
-        # Generate seed for next iteration (Double Ratchet)
-        seed = HKDF(shared_secret, 32, salt=b"DoubleRatchetSeed", hashmod=SHA512)
-
-        # Update private and public keys using the new seed
-        priv, pub = kem_keygen1024(seed)
+    # Start threads for sending and receiving messages
+    receive_thread = threading.Thread(target=handle_receive, args=(s, aes_key))
+    send_thread = threading.Thread(target=handle_send, args=(s, aes_key))
+    receive_thread.start()
+    send_thread.start()
+    receive_thread.join()
+    send_thread.join()
