@@ -1,4 +1,4 @@
-from params import (
+from utilities.params import (
     KYBER_POLY_BYTES,
     KYBER_N,
     KYBER_ETAK512,

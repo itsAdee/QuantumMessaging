@@ -1,4 +1,4 @@
-from prf import generate_prf_byte_array
+from utilities.prf import generate_prf_byte_array
 
 gen_prf_key1 = [-128, 53, 8, -15, -92, -21, -89, 117, -36, 93, 90, -21, 102, 29, -69, -108, -42, -120, -7, 78, -58, 19, 127, -62, 65, 72, 70, 45, 35, 37, 39, -8]
 gen_prf_l1 = 192

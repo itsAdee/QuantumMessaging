@@ -1,10 +1,11 @@
-from ccakem import kem_keygen1024, kem_decaps1024
+from utilities.ccakem import kem_keygen1024, kem_decaps1024
 import socket
 from Crypto.Protocol.KDF import HKDF
 from Crypto.Cipher import AES
-from util import decode, encode
+from utilities.util import decode, encode
 from Crypto.Hash import SHA512
 import threading
+import argparse
 
 HOST = "localhost"
 PORT = 65432
@@ -54,40 +55,50 @@ def handle_send(s, aes_key):
         except:
             break
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
+def main(role):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
 
-    priv, pub = kem_keygen1024()
-    root_key = None  # Initialize root_key
+        priv, pub = kem_keygen1024()
+        root_key = None  # Initialize root_key
 
-    # Key Generation
-    pub_bytes = encode(pub)
-    # Send the public key as bytes
-    s.sendall(pub_bytes)
+        # Key Generation
+        pub_bytes = encode(pub)
+        # Send the public key as bytes
+        s.sendall(pub_bytes)
 
-    # Receive the encapsulated key from the server
-    cipher = s.recv(8096)
-    cipher = decode(cipher)
+        # Receive the encapsulated key from the server
+        cipher = s.recv(8096)
+        cipher = decode(cipher)
 
-    # Decapsulate the key
-    shared_secret = kem_decaps1024(priv, cipher)
-    shared_secret = encode(shared_secret)
+        # Decapsulate the key
+        shared_secret = kem_decaps1024(priv, cipher)
+        shared_secret = encode(shared_secret)
 
-    if root_key is None:
-        # If it's the first iteration, set the root_key
-        root_key = shared_secret
-    else:
-        # Update root_key using the Double Ratchet Algorithm
-        root_key = HKDF(root_key, 32, salt=shared_secret, hashmod=SHA512)
+        if root_key is None:
+            # If it's the first iteration, set the root_key
+            root_key = shared_secret
+        else:
+            # Update root_key using the Double Ratchet Algorithm
+            root_key = HKDF(root_key, 32, salt=shared_secret, hashmod=SHA512)
 
-    # Derive AES key from root_key
-    salt = s.recv(16)
-    aes_key = HKDF(root_key, 16, salt=salt, hashmod=SHA512)
+        # Derive AES key from root_key
+        salt = s.recv(16)
+        aes_key = HKDF(root_key, 16, salt=salt, hashmod=SHA512)
 
-    # Start threads for sending and receiving messages
-    receive_thread = threading.Thread(target=handle_receive, args=(s, aes_key))
-    send_thread = threading.Thread(target=handle_send, args=(s, aes_key))
-    receive_thread.start()
-    send_thread.start()
-    receive_thread.join()
-    send_thread.join()
+        if role == 'receive':
+            # Start thread for receiving messages
+            receive_thread = threading.Thread(target=handle_receive, args=(s, aes_key))
+            receive_thread.start()
+            receive_thread.join()
+        else:
+            # Start thread for sending messages
+            send_thread = threading.Thread(target=handle_send, args=(s, aes_key))
+            send_thread.start()
+            send_thread.join()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Quantum Messaging Client')
+    parser.add_argument('--role', choices=['send', 'receive'], default='receive', help='Role of the client: send or receive')
+    args = parser.parse_args()
+    main(args.role)

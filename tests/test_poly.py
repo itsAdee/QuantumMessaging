@@ -1,4 +1,4 @@
-from poly import poly_conditional_subq, \
+from utilities.poly import poly_conditional_subq, \
     compress_poly, decompress_poly, poly_to_bytes, \
     poly_from_bytes, poly_from_data, poly_to_msg, get_noise_poly, \
     poly_basemul_mont, poly_to_mont, poly_reduce, compress_polyvec, \

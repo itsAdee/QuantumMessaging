@@ -1,4 +1,4 @@
-from cpake import generate_kyber_keys, encrypt, decrypt
+from utilities.cpake import generate_kyber_keys, encrypt, decrypt
 
 generate_key_in_paramk = 2
 generate_key_in_public_seed = [68, 17, 101, 2, -4, -78, -21, 4, -72, 25, -39, 126, -58, -3, -94, 37, 126, -53, 37, 68, 77, -48, -74, -26, 86, -24, 36, -67, 16, -7, 123, -11]

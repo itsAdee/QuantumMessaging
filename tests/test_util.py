@@ -1,10 +1,10 @@
-from util import convert_byte_to_32_bit_unsigned_int
-from util import convert_byte_to_24_bit_unsigned_int
-from util import cbd
-from util import montgomery_reduce
-from util import barrett_reduce
-from util import conditional_subq
-from params import KYBER_Q
+from utilities.util import convert_byte_to_32_bit_unsigned_int
+from utilities.util import convert_byte_to_24_bit_unsigned_int
+from utilities.util import cbd
+from utilities.util import montgomery_reduce
+from utilities.util import barrett_reduce
+from utilities.util import conditional_subq
+from utilities.params import KYBER_Q
 
 res = convert_byte_to_32_bit_unsigned_int([-59, -18, -40, -9, 5, 12, 6, -65])
 assert(res == 4158189253)
