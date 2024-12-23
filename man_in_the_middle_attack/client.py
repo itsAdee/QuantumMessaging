@@ -55,11 +55,11 @@ def handle_send(conn, aes_key):
             # Get user input for the message
             message = input("Enter message: ").encode("utf-8")
             check_file()
-            check_logs(message)
 
             # Encrypt the message and obtain the nonce and tag
             cipher = AES.new(aes_key, AES.MODE_EAX)
             ciphertext, tag = cipher.encrypt_and_digest(message)
+            check_logs(message)
             conn.sendall(ciphertext)
             conn.sendall(tag)
             conn.sendall(cipher.nonce)
@@ -70,6 +70,7 @@ def handle_send(conn, aes_key):
         except Exception as e:
             print(f"Send error: {e}")
             break
+    conn.close()
 
 def key_exchange(conn, role, priv, pub):
     if role == "send":

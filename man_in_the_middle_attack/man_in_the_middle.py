@@ -16,33 +16,42 @@ def client_to_server(client_conn, server_conn):
     try:
         while True:
             client_data = client_conn.recv(8096)
+
             if not client_data:
                 break
-            print("[MITM] Received from client:", client_data)
-            
-            # Forward to server
+            print("[MITM] Received from client:", client_data[:20] + b'...')
+
             server_conn.sendall(client_data)
+
+            check_file()
+            message = parse_logs()
+            decoded_message = message.decode('utf-8')
+            if decoded_message:
+                print("Decrypted Message: ", decoded_message)
+
+                if decoded_message == 'quit':
+                    print("[MITM] Received 'quit' message. Closing connections.")
+                    client_conn.close()
+                    server_conn.close()
+                    break
     except Exception as e:
         print("[MITM] Error in client-to-server:", e)
+
 
 # Function to handle communication from server to client
 def server_to_client(client_conn, server_conn):
     try:
         while True:
-            check_file()
-
-            message = parse_logs()
-            print("Decrypted Message: ", message)
-
             server_data = server_conn.recv(8096)
             if not server_data:
                 break
-            print("[MITM] Received from server:", server_data)
+            print("[MITM] Received from server:", server_data[:20] + b'...')
             
             # Forward to client
             client_conn.sendall(server_data)
     except Exception as e:
         print("[MITM] Error in server-to-client:", e)
+
 
 # Main MITM logic
 def mitm():
@@ -58,6 +67,8 @@ def mitm():
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
             server_conn.connect((HOST, SERVER_PORT))
             print(f"[MITM] Connected to real server at port {SERVER_PORT}")
+
+            check_logs(b"")
 
             # Start threads for bi-directional communication
             client_thread = threading.Thread(target=client_to_server, args=(client_conn, server_conn), daemon=True)
