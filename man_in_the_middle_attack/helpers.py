@@ -6,7 +6,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utilities.ccakem import kem_keygen1024, kem_encaps1024
 import socket
 from Crypto.Protocol.KDF import HKDF
-from man_in_the_middle_attack.helpers import *
 from Crypto.Cipher import AES
 from utilities.util import decode, encode
 from Crypto.Hash import SHA512
