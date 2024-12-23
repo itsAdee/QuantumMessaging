@@ -10,7 +10,7 @@ import argparse
 import psutil
 
 HOST = "localhost"
-PORT = 65432
+PORT = 65432  # Default port
 SALT = b'f285df90eef0292d294e94f00ce3a69e'
 
 def port_in_use(port):
@@ -78,20 +78,20 @@ def key_exchange(conn, role, priv, pub):
 
     return encode(shared_secret)
 
-def main(role):
+def main(role, port):
     s = None
     try:
         if role == "receive":
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind((HOST, PORT))
+            s.bind((HOST, port))
             s.listen()
-            print("Waiting for a connection...")
+            print(f"Waiting for a connection on port {port}...")
             conn, addr = s.accept()
         else:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((HOST, PORT))
-            conn, addr = s, (HOST, PORT)
+            s.connect((HOST, port))
+            conn, addr = s, (HOST, port)
 
         print(f"Connected as {role} by", addr)
 
@@ -119,5 +119,6 @@ def main(role):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Quantum Messaging Application')
     parser.add_argument('--role', choices=['send', 'receive'], required=True, help='Role: send or receive')
+    parser.add_argument('--port', type=int, default=PORT, help='Port to connect to or bind to (default: 65432)')
     args = parser.parse_args()
-    main(args.role)
+    main(args.role, args.port)
