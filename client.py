@@ -4,7 +4,6 @@ from Crypto.Protocol.KDF import HKDF
 from Crypto.Cipher import AES
 from utilities.util import decode, encode
 from Crypto.Hash import SHA512
-from Crypto.Random import get_random_bytes
 import threading
 import argparse
 import psutil
@@ -14,12 +13,14 @@ PORT = 65432  # Default port
 SALT = b'f285df90eef0292d294e94f00ce3a69e'
 
 def port_in_use(port):
+    """Check if the given port is already in use."""
     for conn in psutil.net_connections():
         if conn.laddr.port == port:
             return True
     return False
 
 def handle_receive(conn, aes_key):
+    """Handle receiving messages."""
     while True:
         try:
             ciphertext = conn.recv(8096)
@@ -45,6 +46,7 @@ def handle_receive(conn, aes_key):
             break
 
 def handle_send(conn, aes_key):
+    """Handle sending messages."""
     while True:
         try:
             # Get user input for the message
@@ -65,6 +67,7 @@ def handle_send(conn, aes_key):
             break
 
 def key_exchange(conn, role, priv, pub):
+    """Perform key exchange using KEM."""
     if role == "send":
         conn.sendall(encode(pub))  # Send public key
         receiver_pub = decode(conn.recv(8096))  # Receive public key
@@ -79,6 +82,7 @@ def key_exchange(conn, role, priv, pub):
     return encode(shared_secret)
 
 def main(role, port):
+    """Main function to establish connection and handle messaging."""
     s = None
     try:
         if role == "receive":
