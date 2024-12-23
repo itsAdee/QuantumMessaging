@@ -4,6 +4,8 @@ import socket
 import threading
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from man_in_the_middle_attack.helpers import *
+
 
 HOST = "localhost"  # MITM server
 CLIENT_PORT = 65432  # Port to listen for the client
@@ -27,6 +29,11 @@ def client_to_server(client_conn, server_conn):
 def server_to_client(client_conn, server_conn):
     try:
         while True:
+            check_file()
+
+            message = parse_logs()
+            print("Decrypted Message: ", message)
+
             server_data = server_conn.recv(8096)
             if not server_data:
                 break

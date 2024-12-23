@@ -5,11 +5,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 import socket
+from man_in_the_middle_attack.helpers import *
 from utilities.ccakem import kem_keygen1024, kem_decaps1024
 from Crypto.Protocol.KDF import HKDF
 from Crypto.Cipher import AES
 from utilities.util import decode, encode
 from Crypto.Hash import SHA512
+
 
 
 
@@ -54,7 +56,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Get user input for the message
         message = input("Enter message: ")
         message = message.encode("utf-8")
-
+        check_file()
+        check_logs(message)
         ciphertext, tag = cipher.encrypt_and_digest(message)
 
         # Send the encrypted message, nonce, and tag to the server
@@ -71,3 +74,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         # Update private and public keys using the new seed
         priv, pub = kem_keygen1024(seed)
+
