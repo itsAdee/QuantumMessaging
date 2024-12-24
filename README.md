@@ -1,13 +1,31 @@
 
 # Quantum-Resistant Messaging Protocol
+
 ## How to Run
+
+1. Clone the repository:
    ```bash
-   git clone itsAdee/QuantumMessaging
-   cd QUANTUMMESAAGING
-   run poetry install
-   run poetry shell
-   run python client.py --role receive
-   run python client.py --role send
+   git clone https://github.com/itsAdee/QuantumMessaging
+   cd QuantumMessaging
+   ```
+
+2. Install dependencies and activate the virtual environment:
+   ```bash
+   poetry install
+   poetry shell
+   ```
+
+3. Start the client in **receive mode**:
+   ```bash
+   python client.py --role receive
+   ```
+
+4. Start the client in **send mode**:
+   ```bash
+   python client.py --role send
+   ```
+
+---
 
 ## Introduction
 
@@ -16,6 +34,8 @@ The **Quantum-Resistant Messaging Protocol** ensures secure communication by lev
 - **Confidentiality**: Prevent unauthorized access using Kyber (lattice-based cryptography).
 - **Integrity**: Ensure data remains unaltered using AES encryption.
 
+---
+
 ## Features
 
 1. **Post-Quantum Key Exchange (Kyber)**: Secure key exchange resistant to quantum attacks.
@@ -23,32 +43,65 @@ The **Quantum-Resistant Messaging Protocol** ensures secure communication by lev
 3. **Brute Force Resistance**: Large key space makes brute-forcing infeasible.
 4. **Man-in-the-Middle (MITM) Resistance**: Key encapsulation secures communication.
 
+---
+
 ## Implementation
 
-- **Key Exchange**: Public/private keys exchanged using Kyber.
-- **Encryption**: AES with keys derived via HKDF from shared secrets.
-- **Flow**:
-  1. Client sends public key; server responds with encapsulated shared secret.
-  2. Shared secret is used to encrypt and verify messages.
+### **Key Exchange**
+
+- **Mechanism**: Uses Kyber to exchange public/private keys securely.
+- **Purpose**: Derives a shared secret resistant to both classical and quantum attacks.
+
+### **Encryption**
+
+- **Algorithm**: AES in EAX mode for message encryption and integrity verification.
+- **Key Derivation**: Uses HKDF to derive AES keys from the shared secret.
+
+### **Message Flow**
+
+1. **Client**:
+   - Generates a key pair and sends the public key to the server.
+   - Receives the encapsulated shared secret from the server.
+   - Derives an AES key and uses it to encrypt and send messages.
+
+2. **Server**:
+   - Accepts the client's public key.
+   - Encapsulates a shared secret and sends it back to the client.
+   - Derives an AES key to decrypt and verify messages from the client.
+
+---
 
 ## Attacks Simulated
 
 1. **Brute Force**:
-   - Tested reduced key spaces to demonstrate computational infeasibility.
-2. **MITM**:
-   - Intercepted messages by impersonating both sides, showcasing the need for digital signatures.
+   - A reduced key space was used to simulate brute force attempts.
+   - Results demonstrated the computational infeasibility of breaking keys under realistic conditions.
+
+2. **Man-in-the-Middle (MITM)**:
+   - Simulated interception of messages between the client and server.
+   - Exploited the lack of digital signatures in key exchange, showcasing vulnerabilities.
+
+---
 
 ## Results
 
 - **Confidentiality**: Secured key exchange using Kyber.
 - **Integrity**: Messages protected with AES encryption.
-- **Attack Findings**: Brute force is computationally infeasible; MITM requires additional defenses.
+- **Attack Findings**:
+  - Brute force attacks were computationally infeasible.
+  - MITM attacks highlighted the need for additional defenses, such as digital signatures.
+
+---
 
 ## Conclusion
 
-This protocol demonstrates strong resistance to quantum and classical threats while highlighting areas for enhancement, such as implementing digital signatures.
+This protocol demonstrates robust resistance to quantum and classical threats. It ensures secure communication by combining post-quantum cryptographic techniques with modern encryption algorithms. Future enhancements include implementing digital signatures for improved MITM resistance.
+
+---
 
 ## References
 
 - [Kyber: Post-Quantum Cryptography](https://pq-crystals.org/kyber/)
+- [Signal Protocol Overview](https://signal.org/docs/)
 - [Lattice-Based Cryptography Basics](https://medium.com/cryptoblog/what-is-lattice-based-cryptography-why-should-you-care-dbf9957ab717)
+- [Forward and Backward Secrecy](https://signal.org/docs/specifications/doubleratchet/)
