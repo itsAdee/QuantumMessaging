@@ -1,27 +1,46 @@
-# Crystals-Kyber in Python
 
-## About
+# Quantum-Resistant Messaging Protocol
 
-- just a toy implementation to better understand the algorithm
-- all three 512, 768 and 1024 sec levels. 
-- ported from the [reference](https://github.com/pq-crystals/kyber) and the [Go Implementation](https://github.com/kudelskisecurity/crystals-go), so not the fanciest Python code
-- not hardened against (timing/other) side channel attacks
-- test coverage is poor, use at your own risk
+## Introduction
 
-## How To Use
+The **Quantum-Resistant Messaging Protocol** ensures secure communication by leveraging post-quantum cryptographic techniques to counter threats posed by quantum computing. It focuses on two key attributes:
 
-Just take a look at `ccakem.py`. Functions 
+- **Confidentiality**: Prevent unauthorized access using Kyber (lattice-based cryptography).
+- **Integrity**: Ensure data remains unaltered using AES encryption.
 
-- `kem_keygenXXX()`, 
-- `kem_encapsXXX(pubkey, seed=None)` and 
-- `kem_decapsXXX(private_key, ciphertext)` 
+## Features
 
-correspond directly to the [spec](https://pq-crystals.org/). For `kem_encaps` you can optionally provide a custom `seed` which is useful for debugging.
+1. **Post-Quantum Key Exchange (Kyber)**: Secure key exchange resistant to quantum attacks.
+2. **Encryption and Integrity**: AES in EAX mode provides data encryption and tamper-proofing.
+3. **Brute Force Resistance**: Large key space makes brute-forcing infeasible.
+4. **Man-in-the-Middle (MITM) Resistance**: Key encapsulation secures communication.
 
-Typical kem, e.g. 512 sec level, would be
+## Implementation
 
-````
-priv, pub = kem_keygen512()
-secret1, cipher = kem_encaps512(pub)
-secret2 = kem_decaps512(priv, cipher)
-````
+- **Key Exchange**: Public/private keys exchanged using Kyber.
+- **Encryption**: AES with keys derived via HKDF from shared secrets.
+- **Flow**:
+  1. Client sends public key; server responds with encapsulated shared secret.
+  2. Shared secret is used to encrypt and verify messages.
+
+## Attacks Simulated
+
+1. **Brute Force**:
+   - Tested reduced key spaces to demonstrate computational infeasibility.
+2. **MITM**:
+   - Intercepted messages by impersonating both sides, showcasing the need for digital signatures.
+
+## Results
+
+- **Confidentiality**: Secured key exchange using Kyber.
+- **Integrity**: Messages protected with AES encryption.
+- **Attack Findings**: Brute force is computationally infeasible; MITM requires additional defenses.
+
+## Conclusion
+
+This protocol demonstrates strong resistance to quantum and classical threats while highlighting areas for enhancement, such as implementing digital signatures.
+
+## References
+
+- [Kyber: Post-Quantum Cryptography](https://pq-crystals.org/kyber/)
+- [Lattice-Based Cryptography Basics](https://medium.com/cryptoblog/what-is-lattice-based-cryptography-why-should-you-care-dbf9957ab717)
