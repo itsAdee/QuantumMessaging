@@ -1,5 +1,13 @@
 
 # Quantum-Resistant Messaging Protocol
+## How to Run
+   ```bash
+   git clone itsAdee/QuantumMessaging
+   cd QUANTUMMESAAGING
+   run poetry install
+   run poetry shell
+   run python client.py --role receive
+   run python client.py --role send
 
 ## Introduction
 
